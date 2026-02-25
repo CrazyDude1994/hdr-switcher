@@ -78,7 +78,10 @@ def _set_startup(enabled: bool, script_path: str) -> None:
         )
         with key:
             if enabled:
-                value = f'pythonw.exe "{script_path}"'
+                if getattr(sys, "frozen", False):
+                    value = f'"{script_path}"'
+                else:
+                    value = f'pythonw.exe "{script_path}"'
                 winreg.SetValueEx(key, _REG_KEY, 0, winreg.REG_SZ, value)
                 log.info("Start-with-Windows enabled: %s", value)
             else:
