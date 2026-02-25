@@ -1,0 +1,41 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build exe
+        run: pyinstaller --noconsole --onefile --name HDRSwitcher --hidden-import pystray._win32 main.py
+
+      - name: Update latest release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete latest --yes 2>/dev/null || true
+          git tag -f latest
+          git push -f origin latest
+          gh release create latest dist/HDRSwitcher.exe \
+            --title "Latest Build" \
+            --notes "Built from commit ${{ github.sha }} on $(date -u +'%Y-%m-%d %H:%M UTC')"
