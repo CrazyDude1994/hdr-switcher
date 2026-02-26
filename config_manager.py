@@ -15,9 +15,24 @@ from typing import List
 
 log = logging.getLogger(__name__)
 
-# Config lives alongside main.py / this file.
-_SCRIPT_DIR = Path(sys.argv[0]).resolve().parent
-CONFIG_PATH = _SCRIPT_DIR / "config.json"
+
+def _get_data_dir() -> Path:
+    """Return the directory used for config and log files.
+
+    Frozen (PyInstaller) builds write to %APPDATA%\\HDRSwitcher so the app
+    has guaranteed write access regardless of where the exe is placed.
+    Plain Python runs use the directory next to the script as before.
+    """
+    if getattr(sys, "frozen", False):
+        appdata = os.environ.get("APPDATA") or str(Path.home())
+        d = Path(appdata) / "HDRSwitcher"
+        d.mkdir(parents=True, exist_ok=True)
+        return d
+    return Path(sys.argv[0]).resolve().parent
+
+
+DATA_DIR = _get_data_dir()
+CONFIG_PATH = DATA_DIR / "config.json"
 
 
 @dataclass

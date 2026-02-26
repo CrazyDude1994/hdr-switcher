@@ -7,6 +7,7 @@ System tray application for HDR Switcher.
 """
 from __future__ import annotations
 import logging
+import sys
 import threading
 import tkinter as tk
 import winreg
@@ -79,6 +80,7 @@ def _set_startup(enabled: bool, script_path: str) -> None:
         with key:
             if enabled:
                 if getattr(sys, "frozen", False):
+                    # Running as exe — launch it directly
                     value = f'"{script_path}"'
                 else:
                     value = f'pythonw.exe "{script_path}"'

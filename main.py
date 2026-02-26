@@ -6,14 +6,22 @@ Launch with:   python main.py        (shows console for debugging)
                pythonw main.py       (no console, background/tray only)
 """
 import logging
+import os
 import sys
 from pathlib import Path
 
 # ── logging ────────────────────────────────────────────────────────────────────
 
 def _setup_logging() -> None:
-    script_dir = Path(sys.argv[0]).resolve().parent
-    log_file = script_dir / "hdr_switcher.log"
+    if getattr(sys, "frozen", False):
+        # Frozen exe: write log to %APPDATA%\HDRSwitcher\ (same dir as config)
+        appdata = os.environ.get("APPDATA") or str(Path.home())
+        log_dir = Path(appdata) / "HDRSwitcher"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "hdr_switcher.log"
+    else:
+        script_dir = Path(sys.argv[0]).resolve().parent
+        log_file = script_dir / "hdr_switcher.log"
 
     fmt = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     datefmt = "%Y-%m-%d %H:%M:%S"
